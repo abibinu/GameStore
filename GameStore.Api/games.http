@@ -1,7 +1,7 @@
 GET http://localhost:5062/games
 
 ###
-GET http://localhost:5062/games/2
+GET http://localhost:5062/games/6
 
 ###
 POST http://localhost:5062/games
@@ -13,3 +13,17 @@ Content-Type: application/json
     "price": 59.99,
     "releaseDate": "2023-10-20"
 }
+
+###
+PUT http://localhost:5062/games/3
+Content-Type: application/json
+
+{
+    "name": "Super Mario Retro",
+    "genre": "Platformer",
+    "price": 109.99,
+    "releaseDate": "2023-10-20"
+}
+
+###
+DELETE http://localhost:5062/games/3
