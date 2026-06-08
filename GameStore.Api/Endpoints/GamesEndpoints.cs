@@ -1,13 +1,14 @@
 using GameStore.Api.Data;
 using GameStore.Api.Dtos;
 using GameStore.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Api.Endpoints;
 
 public static class GamesEndpoints
 {
     const string GetGameEndpointName = "GetGame";
-    private static readonly List<GameDto> games = [
+    private static readonly List<GameSummaryDto> games = [
         new(
             1,
             "Forza Horizon 3",
@@ -35,21 +36,38 @@ public static class GamesEndpoints
     {
         var group = app.MapGroup("/games");
         //Get games
-        group.MapGet("/", () =>
-        {
-            return games is null ? Results.NotFound() : Results.Ok(games);
-        });
+        group.MapGet("/", async (GameStoreContext dbContext) 
+            => await dbContext.Games
+                            .Include(game => game.Genre)
+                              .Select(game => new GameSummaryDto(
+                                    game.Id,
+                                    game.Name,
+                                    game.Genre!.Name,
+                                    game.Price,
+                                    game.ReleaseDate
+                                ))
+                                .AsNoTracking()
+                                .ToListAsync()
+                                );
 
 
         //Get specific games
-        group.MapGet("/{id}", (int id) =>
+        group.MapGet("/{id}", async (int id, GameStoreContext dbContext) =>
         {
-            var game = games.Find(game => game.Id == id);
-            return game is null ? Results.NotFound() : Results.Ok(game);
+            var game = await dbContext.Games.FindAsync(id);
+            return game is null ? Results.NotFound() : Results.Ok(
+                new GameDetailsDto(
+                    game.Id,
+                    game.Name,
+                    game.GenreId,
+                    game.Price,
+                    game.ReleaseDate
+                )
+            );
         }).WithName(GetGameEndpointName);
 
         //Post games
-        group.MapPost("/", (CreateGameDto newGame, GameStoreContext dbContext) =>
+        group.MapPost("/", async (CreateGameDto newGame, GameStoreContext dbContext) =>
         {
             Game game = new()
             {
@@ -60,7 +78,7 @@ public static class GamesEndpoints
             };
 
             dbContext.Games.Add(game);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             GameDetailsDto gameDto = new(
                 game.Id,
@@ -81,7 +99,7 @@ public static class GamesEndpoints
 
             if (index == -1) return Results.NotFound();
 
-            games[index] = new GameDto(
+            games[index] = new GameSummaryDto(
                 id,
                 updatedGame.Name,
                 updatedGame.Genre,
