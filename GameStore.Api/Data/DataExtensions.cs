@@ -24,7 +24,7 @@ public static class DataExtensions
                     context.Set<Genre>().AddRange(
                         new Genre { Name = "Fighting" },
                         new Genre { Name = "RPG" },
-                        new Genre { Name = "PLatformer" },
+                        new Genre { Name = "Platformer" },
                         new Genre { Name = "Racing" },
                         new Genre { Name = "Sports" }
                     );
