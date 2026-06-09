@@ -65,7 +65,7 @@ public static class GamesEndpoints
                 game.ReleaseDate
             );
 
-            return Results.CreatedAtRoute(GetGameEndpointName, new { id = game.Id }, game);
+            return Results.CreatedAtRoute(GetGameEndpointName, new { id = game.Id }, gameDto);
 
         });
 
